@@ -19,6 +19,7 @@ namespace Fusee.Tutorial.Core
         private SceneContainer _scene;
         private SceneRenderer _sceneRenderer;
         private float _camAngle = 0;
+        private float _cubeRotation = 0;
         // Init is called on startup. 
         public override void Init()
         {
@@ -86,7 +87,8 @@ namespace Fusee.Tutorial.Core
             RC.View = float4x4.CreateTranslation(0, 0, 100) * float4x4.CreateRotationY(_camAngle);
 
 
-            // Some Animation 
+            // Some Animation
+            _cubeRotation += 360.0f * M.Pi / 180.0f * DeltaTime;
             for (int i = 0; i < _scene.Children.Count; i++)
             {
                 var cube = (SceneNodeContainer)_scene.Children[i];
@@ -97,11 +99,12 @@ namespace Fusee.Tutorial.Core
                 {
                     transform.Translation = new float3(i * 10, 10 * M.Sin(1 * TimeSinceStart), 0);
                     //Shader Animation will make things lag like all hells
-                    //shader.Effect = SimpleMeshes.MakeShaderEffect(new float3(0 + 1*M.Sin(1 * TimeSinceStart), 0, 0 + i * 0.2f), new float3(1, 1, 1), 2);
-                    transform.Rotation = new float3( );
+                    shader.Effect = SimpleMeshes.MakeShaderEffect(new float3(0 + 1*M.Sin(1 * TimeSinceStart), 0, 0 + i * 0.2f), new float3(1, 1, 1), 2);
+                    transform.Rotation = new float3( 0, 0, _cubeRotation);
                 } else {
                     transform.Translation = new float3(i*10 + 10 * M.Sin(1 * TimeSinceStart), 0, 0);
                     transform.Scale = new float3(2 * M.Sin(1 * TimeSinceStart), 2 * M.Sin(1 * TimeSinceStart), 2 * M.Sin(1 * TimeSinceStart));
+                    transform.Rotation = new float3( _cubeRotation, 0, 0);
                 }
             }
 

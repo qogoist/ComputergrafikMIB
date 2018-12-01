@@ -26,7 +26,7 @@
             "stopAtEntry": false,
             "console": "externalTerminal",
             "noDebug": true
-        }
+        },
         // {
         //     "name": ".NET Core Attach",
         //     "type": "coreclr",
