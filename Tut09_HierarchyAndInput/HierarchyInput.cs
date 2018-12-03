@@ -330,6 +330,7 @@ namespace Fusee.Tutorial.Core
             _lowerArmTransform.Rotation = new float3(_lowerArmTransform.Rotation.x + Keyboard.UpDownAxis * Time.DeltaTime, 0, 0);
             _upperArmTransform.Rotation = new float3(_upperArmTransform.Rotation.x + Keyboard.WSAxis * Time.DeltaTime, 0, 0);
 
+            //TODO: Start- and endangle + open and close pincers on button press
             _leftPincerTransform.Rotation = new float3(0, 0, _leftPincerTransform.Rotation.z + Keyboard.ADAxis * Time.DeltaTime);
             _rightPincerTransform.Rotation = new float3(0, 0, _rightPincerTransform.Rotation.z - Keyboard.ADAxis * Time.DeltaTime);
 
