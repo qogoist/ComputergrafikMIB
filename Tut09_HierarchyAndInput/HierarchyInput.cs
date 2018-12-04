@@ -20,6 +20,8 @@ namespace Fusee.Tutorial.Core
         private SceneRenderer _sceneRenderer;
         private float _camAngle = 0;
         private float _speed = 0;
+        private bool _move = false;
+        private bool _open = true;
         private TransformComponent _baseTransform;
         private TransformComponent _bodyTransform;
         private TransformComponent _lowerArmTransform;
@@ -63,13 +65,13 @@ namespace Fusee.Tutorial.Core
             };
             _leftPincerTransform = new TransformComponent
             {
-                Rotation = new float3(0, 0, M.DegreesToRadians(-90)),
+                Rotation = new float3(0, 0, M.DegreesToRadians(-135)), //start at -135
                 Scale = new float3(1, 1, 1),
                 Translation = new float3(0, -1.5f, -1)
             };
             _rightPincerTransform = new TransformComponent
             {
-                Rotation = new float3(0, 0, M.DegreesToRadians(-90)),
+                Rotation = new float3(0, 0, M.DegreesToRadians(-45)), //start at -45
                 Scale = new float3(1, 1, 1),
                 Translation = new float3(0, 1.5f, -1)
             };
@@ -321,18 +323,48 @@ namespace Fusee.Tutorial.Core
                 _camAngle -= _speed;
                 _speed = _speed * 0.9f;
             }
-            Diagnostics.Log(_speed);
 
             RC.View = float4x4.CreateTranslation(0, -10, 50) * float4x4.CreateRotationY(_camAngle);
 
-            //Move the robot
+            //_move the robot
+            //Press Up/Down to rotate the green arm
+            //Press W/A to rotate the blue arm
+            //Press Left/Right to rotate the entire model left or right
+            //Press O to open or close the arm
             _bodyTransform.Rotation = new float3(0, _bodyTransform.Rotation.y + Keyboard.LeftRightAxis * Time.DeltaTime, 0);
             _lowerArmTransform.Rotation = new float3(_lowerArmTransform.Rotation.x + Keyboard.UpDownAxis * Time.DeltaTime, 0, 0);
             _upperArmTransform.Rotation = new float3(_upperArmTransform.Rotation.x + Keyboard.WSAxis * Time.DeltaTime, 0, 0);
 
-            //TODO: Start- and endangle + open and close pincers on button press + test
-            _leftPincerTransform.Rotation = new float3(0, 0, _leftPincerTransform.Rotation.z + Keyboard.ADAxis * Time.DeltaTime);
-            _rightPincerTransform.Rotation = new float3(0, 0, _rightPincerTransform.Rotation.z - Keyboard.ADAxis * Time.DeltaTime);
+            //Animating the Pincer
+            if (Keyboard.GetButton(79))
+            {
+                _move = true;
+            }
+            
+            if (_move && _open)
+            {
+                if (_rightPincerTransform.Rotation.z > M.DegreesToRadians(-107))
+                {
+                    _leftPincerTransform.Rotation = new float3(0, 0, _leftPincerTransform.Rotation.z + 1 * Time.DeltaTime);
+                    _rightPincerTransform.Rotation = new float3(0, 0, _rightPincerTransform.Rotation.z - 1 * Time.DeltaTime);
+                }
+                else if (_rightPincerTransform.Rotation.z <= M.DegreesToRadians(-107))
+                {
+                    _move = false;
+                    _open = false;
+                }
+            } else if (_move && !_open){
+                if (_rightPincerTransform.Rotation.z <= M.DegreesToRadians(-45))
+                {
+                    _leftPincerTransform.Rotation = new float3(0, 0, _leftPincerTransform.Rotation.z - 1 * Time.DeltaTime);
+                    _rightPincerTransform.Rotation = new float3(0, 0, _rightPincerTransform.Rotation.z + 1 * Time.DeltaTime);
+                }
+                else if (_rightPincerTransform.Rotation.z >= M.DegreesToRadians(-45))
+                {
+                    _move = false;
+                    _open = true;
+                }
+            }
 
             // Render the scene on the current render context
             _sceneRenderer.Render(RC);
@@ -351,7 +383,7 @@ namespace Fusee.Tutorial.Core
             // Create a new projection matrix generating undistorted images on the new aspect ratio.
             var aspectRatio = Width / (float)Height;
 
-            // 0.25*PI Rad -> 45° Opening angle along the vertical direction. Horizontal opening angle is calculated based on the aspect ratio
+            // 0.25*PI Rad -> 45° _opening angle along the vertical direction. Horizontal _opening angle is calculated based on the aspect ratio
             // Front clipping happens at 1 (Objects nearer than 1 world unit get clipped)
             // Back clipping happens at 2000 (Anything further away from the camera than 2000 world units gets clipped, polygons will be cut)
             var projection = float4x4.CreatePerspectiveFieldOfView(M.PiOver4, aspectRatio, 1, 20000);
