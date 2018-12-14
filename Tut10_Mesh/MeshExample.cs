@@ -49,7 +49,7 @@ namespace Fusee.Tutorial.Core
                             },
 
                             // MESH COMPONENT
-                            SimpleMeshes.CreateCircle(5, 6)
+                            SimpleMeshes.CreateCircle(10, 64)
                         }
                     },
                 }

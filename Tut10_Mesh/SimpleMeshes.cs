@@ -245,7 +245,7 @@ namespace Fusee.Tutorial.Core
             mesh.Normals = new float3[segments + 1];
             mesh.Triangles = new ushort[segments * 3];
 
-            float angle = 360 / segments;
+            float angle = 360f / (float)segments;
 
             //Center Point
             mesh.Vertices[segments] = new float3(0, 0, 0);
