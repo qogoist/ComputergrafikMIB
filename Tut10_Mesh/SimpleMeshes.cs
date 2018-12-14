@@ -8,7 +8,7 @@ using Fusee.Serialization;
 
 namespace Fusee.Tutorial.Core
 {
-    public static class SimpleMeshes 
+    public static class SimpleMeshes
     {
         public static Mesh CreateCuboid(float3 size)
         {
@@ -150,11 +150,11 @@ namespace Fusee.Tutorial.Core
                     new float2( 1,  1),  // 22 - belongs to up
                     new float2( 0,  1),  // 23 - belongs to back                    
                 },
-                BoundingBox = new AABBf(-0.5f * size, 0.5f*size)
+                BoundingBox = new AABBf(-0.5f * size, 0.5f * size)
             };
         }
 
-       public static ShaderEffect MakeShaderEffect(float3 diffuseColor, float3 specularColor, float shininess)
+        public static ShaderEffect MakeShaderEffect(float3 diffuseColor, float3 specularColor, float shininess)
         {
             MaterialComponent temp = new MaterialComponent
             {
@@ -185,9 +185,43 @@ namespace Fusee.Tutorial.Core
 
         public static Mesh CreateConeFrustum(float radiuslower, float radiusupper, float height, int segments)
         {
-            throw new NotImplementedException();
-        }
+            Mesh output = new Mesh
+            {
+                Vertices = new float3[4 + segments * 4],
+                Normals = new float3[4 + segments * 4],
+                Triangles = new ushort[segments * 12],
+                UVs = new float2[4 + segments * 4],
+            };
 
+            float angle = (float)360 / segments;
+
+            //Center points for both circles
+            output.Vertices[segments] = new float3(0, -0.5f * height, 0);
+            output.Vertices[segments + 1] = new float3(0, -0.5f * height, 0);
+            output.Vertices[2 * segments + 2] = new float3(0, 0.5f * height, 0);
+            output.Vertices[2 * segments + 3] = new float3(0, 0.5f * height, 0);
+            output.Normals[segments] = new float3(0, -1, 0);
+            output.Normals[segments + 1] = new float3(0, -1, 0);
+            output.Normals[2 * segments + 2] = new float3(0, 1, 0);
+            output.Normals[2 * segments + 3] = new float3(0, 1, 0);
+
+            for (int i = 0; i < segments; i++)
+            {
+                //Lower circle
+                output.Vertices[i] = new float3(radiuslower * M.Cos(M.DegreesToRadians(i * angle)), -0.5f * height, radiuslower * M.Sin(M.DegreesToRadians(i * angle)));
+                output.Vertices[i + 1] = new float3(radiuslower * M.Cos(M.DegreesToRadians(i * angle)), -0.5f * height, radiuslower * M.Sin(M.DegreesToRadians(i * angle)));
+                output.Normals[i] = new float3(0, -1, 0);
+                output.Normals[i + 1] = new float3(radiuslower * M.Cos(M.DegreesToRadians(i * angle)), 0, radiuslower * M.Sin(M.DegreesToRadians(i * angle)));
+
+                //Upper circle
+                output.Vertices[i + segments + 2] = new float3(radiusupper * M.Cos(M.DegreesToRadians(i * angle)), 0.5f * height, radiusupper * M.Sin(M.DegreesToRadians(i * angle)));
+                output.Vertices[i + segments + 3] = new float3(radiusupper * M.Cos(M.DegreesToRadians(i * angle)), 0.5f * height, radiusupper * M.Sin(M.DegreesToRadians(i * angle)));
+                output.Normals[i + segments + 2] = new float3(0, 1, 0);
+                output.Normals[i + segments + 3] = new float3(radiusupper * M.Cos(M.DegreesToRadians(i * angle)), 0, radiusupper * M.Sin(M.DegreesToRadians(i * angle)));
+            }
+
+            return output;
+        }
 
         public static Mesh CreatePyramid(float baselen, float height)
         {
@@ -201,6 +235,38 @@ namespace Fusee.Tutorial.Core
         public static Mesh CreateTorus(float mainradius, float segradius, int segments, int slices)
         {
             throw new NotImplementedException();
+        }
+
+        public static Mesh CreateCircle(float radius, int segments)
+        {
+            Mesh mesh = new Mesh { };
+
+            mesh.Vertices = new float3[segments + 1];
+            mesh.Normals = new float3[segments + 1];
+            mesh.Triangles = new ushort[segments * 3];
+
+            float angle = 360 / segments;
+
+            //Center Point
+            mesh.Vertices[segments] = new float3(0, 0, 0);
+            mesh.Normals[segments] = new float3(0, 1, 0);
+
+            for (int i = 0; i < segments; i++)
+            {
+                mesh.Vertices[i] = new float3(radius * M.Cos(M.DegreesToRadians(i * angle)), 0, radius * M.Sin(M.DegreesToRadians(i * angle)));
+                mesh.Normals[i] = new float3(0, 1, 0);
+
+                mesh.Triangles[3 * i] = (ushort)segments;
+                mesh.Triangles[3 * i + 1] = (ushort)(i);
+                mesh.Triangles[3 * i + 2] = (ushort)(i + 1);
+            }
+
+            //last Triangle piece
+            mesh.Triangles[3 * (segments - 1)] = (ushort)segments;
+            mesh.Triangles[3 * (segments - 1) + 1] = (ushort)(segments - 1);
+            mesh.Triangles[3 * (segments - 1) + 2] = (ushort)0;
+
+            return mesh;
         }
 
     }
