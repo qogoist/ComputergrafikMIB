@@ -185,42 +185,76 @@ namespace Fusee.Tutorial.Core
 
         public static Mesh CreateConeFrustum(float radiuslower, float radiusupper, float height, int segments)
         {
-            Mesh output = new Mesh
+            Mesh mesh = new Mesh
             {
-                Vertices = new float3[4 + segments * 4],
-                Normals = new float3[4 + segments * 4],
+                Vertices = new float3[2 + segments * 4],
+                Normals = new float3[2 + segments * 4],
                 Triangles = new ushort[segments * 12],
-                UVs = new float2[4 + segments * 4],
+                //UVs = new float2[2 + segments * 4],
             };
 
-            float angle = (float)360 / segments;
+            float angle = 360f / (float)segments;
 
-            //Center points for both circles
-            output.Vertices[segments] = new float3(0, -0.5f * height, 0);
-            output.Vertices[segments + 1] = new float3(0, -0.5f * height, 0);
-            output.Vertices[2 * segments + 2] = new float3(0, 0.5f * height, 0);
-            output.Vertices[2 * segments + 3] = new float3(0, 0.5f * height, 0);
-            output.Normals[segments] = new float3(0, -1, 0);
-            output.Normals[segments + 1] = new float3(0, -1, 0);
-            output.Normals[2 * segments + 2] = new float3(0, 1, 0);
-            output.Normals[2 * segments + 3] = new float3(0, 1, 0);
+            //Center Points
+            mesh.Vertices[4 * segments] = new float3(0, -(height / 2), 0);
+            mesh.Normals[4 * segments] = new float3(0, -1, 0);
+            mesh.Vertices[4 * segments + 1] = new float3(0, (height / 2), 0);
+            mesh.Normals[4 * segments + 1] = new float3(0, 1, 0);
 
             for (int i = 0; i < segments; i++)
             {
-                //Lower circle
-                output.Vertices[i] = new float3(radiuslower * M.Cos(M.DegreesToRadians(i * angle)), -0.5f * height, radiuslower * M.Sin(M.DegreesToRadians(i * angle)));
-                output.Vertices[i + 1] = new float3(radiuslower * M.Cos(M.DegreesToRadians(i * angle)), -0.5f * height, radiuslower * M.Sin(M.DegreesToRadians(i * angle)));
-                output.Normals[i] = new float3(0, -1, 0);
-                output.Normals[i + 1] = new float3(radiuslower * M.Cos(M.DegreesToRadians(i * angle)), 0, radiuslower * M.Sin(M.DegreesToRadians(i * angle)));
+                //lower circle
+                mesh.Vertices[i] = new float3(radiuslower * M.Cos(M.DegreesToRadians(i * angle)), -(height / 2), radiuslower * M.Sin(M.DegreesToRadians(i * angle)));
+                mesh.Normals[i] = new float3(0, -1, 0);
+
+                mesh.Vertices[segments + i] = new float3(radiuslower * M.Cos(M.DegreesToRadians(i * angle)), -(height / 2), radiuslower * M.Sin(M.DegreesToRadians(i * angle)));
+                mesh.Normals[segments + i] = new float3(M.Cos(M.DegreesToRadians(i * angle)), 0, M.Sin(M.DegreesToRadians(i * angle)));
 
                 //Upper circle
-                output.Vertices[i + segments + 2] = new float3(radiusupper * M.Cos(M.DegreesToRadians(i * angle)), 0.5f * height, radiusupper * M.Sin(M.DegreesToRadians(i * angle)));
-                output.Vertices[i + segments + 3] = new float3(radiusupper * M.Cos(M.DegreesToRadians(i * angle)), 0.5f * height, radiusupper * M.Sin(M.DegreesToRadians(i * angle)));
-                output.Normals[i + segments + 2] = new float3(0, 1, 0);
-                output.Normals[i + segments + 3] = new float3(radiusupper * M.Cos(M.DegreesToRadians(i * angle)), 0, radiusupper * M.Sin(M.DegreesToRadians(i * angle)));
+                mesh.Vertices[2 * segments + i] = new float3(radiusupper * M.Cos(M.DegreesToRadians(i * angle)), (height / 2), radiusupper * M.Sin(M.DegreesToRadians(i * angle)));
+                mesh.Normals[2 * segments + i] = new float3(0, 1, 0);
+
+                mesh.Vertices[3 * segments + i] = new float3(radiusupper * M.Cos(M.DegreesToRadians(i * angle)), (height / 2), radiusupper * M.Sin(M.DegreesToRadians(i * angle)));
+                mesh.Normals[3 * segments + i] = new float3(M.Cos(M.DegreesToRadians(i * angle)), 0, M.Sin(M.DegreesToRadians(i * angle)));
+
+                //Triangles Lower circle
+                mesh.Triangles[3 * i] = (ushort)(4 * segments);
+                mesh.Triangles[3 * i + 1] = (ushort)(i);
+                mesh.Triangles[3 * i + 2] = (ushort)(i + 1);
+
+                //Triangles Upper circle
+                mesh.Triangles[(segments * 3) + 3 * i] = (ushort)(4 * segments + 1);
+                mesh.Triangles[(segments * 3) + 3 * i + 1] = (ushort)(2 * segments + i);
+                mesh.Triangles[(segments * 3) + 3 * i + 2] = (ushort)(2 * segments + i + 1);
+
+                //Triangles cylinder
+                mesh.Triangles[(segments * 6) + 3 * i] = (ushort)(segments + i);
+                mesh.Triangles[(segments * 6) + 3 * i + 1] = (ushort)(segments + i + 1);
+                mesh.Triangles[(segments * 6) + 3 * i + 2] = (ushort)(3 * segments + i + 1);
+
+                mesh.Triangles[(segments * 9) + 3 * i] = (ushort)(segments + i);
+                mesh.Triangles[(segments * 9) + 3 * i + 1] = (ushort)(3 * segments + i + 1);
+                mesh.Triangles[(segments * 9) + 3 * i + 2] = (ushort)(3 * segments + i);
             }
 
-            return output;
+            //Last piece
+            mesh.Triangles[3 * (segments - 1)] = (ushort)(4 * segments);
+            mesh.Triangles[3 * (segments - 1) + 1] = (ushort)(segments - 1);
+            mesh.Triangles[3 * (segments - 1) + 2] = (ushort)0;
+
+            mesh.Triangles[segments * 3 + 3 * (segments - 1)] = (ushort)(4 * segments + 1);
+            mesh.Triangles[segments * 3 + 3 * (segments - 1) + 1] = (ushort)(3 * segments - 1);
+            mesh.Triangles[segments * 3 + 3 * (segments - 1) + 2] = (ushort)(2 * segments);
+
+            mesh.Triangles[segments * 6 + 3 * (segments - 1)] = (ushort)(2 * segments - 1);
+            mesh.Triangles[segments * 6 + 3 * (segments - 1) + 1] = (ushort)(segments);
+            mesh.Triangles[segments * 6 + 3 * (segments - 1) + 2] = (ushort)(3 * segments);
+
+            mesh.Triangles[segments * 9 + 3 * (segments - 1)] = (ushort)(2 * segments - 1);
+            mesh.Triangles[segments * 9 + 3 * (segments - 1) + 1] = (ushort)(3 * segments);
+            mesh.Triangles[segments * 9 + 3 * (segments - 1) + 2] = (ushort)(4 * segments - 1);
+
+            return mesh;
         }
 
         public static Mesh CreatePyramid(float baselen, float height)
