@@ -26,6 +26,8 @@ namespace Fusee.Tutorial.Core
         private TransformComponent _turretTransform;
         private TransformComponent _armTransform;
         private TransformComponent _bodyTransform;
+        private TransformComponent _frontAxle;
+        private TransformComponent _backAxle;
         private float _camAngle = 0;
         private float _speed = 0;
 
@@ -77,6 +79,8 @@ namespace Fusee.Tutorial.Core
             _turretTransform = _scene.Children.FindNodes(node => node.Name == "Turret")?.FirstOrDefault()?.GetTransform();
             _armTransform = _scene.Children.FindNodes(node => node.Name == "Arm")?.FirstOrDefault()?.GetTransform();
             _bodyTransform = _scene.Children.FindNodes(node => node.Name == "Body")?.FirstOrDefault()?.GetTransform();
+            _frontAxle = _scene.Children.FindNodes(node => node.Name == "FrontAxle")?.FirstOrDefault()?.GetTransform();
+            _backAxle = _scene.Children.FindNodes(node => node.Name == "RearAxle")?.FirstOrDefault()?.GetTransform();
 
             // Create a scene renderer holding the scene above
             _sceneRenderer = new SceneRenderer(_scene);
@@ -140,16 +144,53 @@ namespace Fusee.Tutorial.Core
                 switch (_currentPick.Node.Name)
                 {
                     case "Arm":
-                        _armTransform.Rotation.x = _armTransform.Rotation.x + Keyboard.WSAxis * Time.DeltaTime;
-                        break;
-                    case "Body":
-                        _bodyTransform.Rotation.y = _bodyTransform.Rotation.y + Keyboard.ADAxis * Time.DeltaTime;
+                        _armTransform.Rotation.x = _armTransform.Rotation.x + Keyboard.UpDownAxis * Time.DeltaTime;
                         break;
                     case "Turret":
-                        _turretTransform.Rotation.y = _turretTransform.Rotation.y + Keyboard.ADAxis * Time.DeltaTime;
+                        _turretTransform.Rotation.y = _turretTransform.Rotation.y + Keyboard.LeftRightAxis * Time.DeltaTime;
                         break;
                     default:
                         break;
+                }
+            }
+
+            float rotVel = 0.05f;
+            float posVel = 1;
+            float wheelRot = 0.1f;
+            bool turn = false;
+
+
+            if (Keyboard.GetButton(65) || Keyboard.GetButton(68))
+            {
+                //Diagnostics.Log(_frontAxle.Rotation.y);
+                if (_frontAxle.Rotation.y > M.DegreesToRadians(-10) && _frontAxle.Rotation.y < M.DegreesToRadians(10))
+                {
+                    float tempRot = wheelRot * Keyboard.ADAxis;
+                    _frontAxle.Rotation.y = tempRot;
+                }
+                turn = true;
+            }
+            else
+            {
+                _frontAxle.Rotation.y = 0;
+            }
+
+
+            if (Keyboard.GetButton(87) || Keyboard.GetButton(83))
+            {
+                float3 newPos = _bodyTransform.Translation;
+                newPos.x += Keyboard.WSAxis * posVel * M.Sin(_bodyTransform.Rotation.y);
+                newPos.z += Keyboard.WSAxis * posVel * M.Cos(_bodyTransform.Rotation.y);
+                _bodyTransform.Translation = newPos;
+
+                _frontAxle.Rotation.x += wheelRot * Keyboard.WSAxis;
+                _backAxle.Rotation.x += wheelRot * Keyboard.WSAxis;
+
+                if (turn)
+                {   
+                    float orientation = Keyboard.WSAxis * Keyboard.ADAxis;
+                    float newYRot = _bodyTransform.Rotation.y + rotVel * orientation;
+                    _bodyTransform.Rotation = new float3(0, newYRot, 0);
                 }
             }
 
